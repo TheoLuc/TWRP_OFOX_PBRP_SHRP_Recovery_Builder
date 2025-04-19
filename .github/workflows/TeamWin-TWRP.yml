@@ -37,9 +37,9 @@ on:
         required: true
         default: ''
       MAKEFILE_NAME:
-        description: 'MAKEFILE_NAME (without including .mk, Example: omni_7304F)'
+        description: 'MAKEFILE_NAME (without including .mk, Example: twrp_7304F)'
         required: true
-        default: 'omni_'
+        default: 'twrp_'
       BUILD_TARGET:
         description: 'Specify your Build Target' # Pick among boot, recovery and vendor_boot
         required: true
@@ -115,11 +115,13 @@ jobs:
         cd android-recovery
         git config --global user.name "${{ github.actor }}"
         git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-        repo init --depth=1 -u ${{ env.MANIFEST }} -b ${{ inputs.MANIFEST_BRANCH }}
+        repo init --depth=1 -u ${{ env.MANIFEST }} -b ${{ inputs.MANIFEST_BRANCH }} -g default,-mips,-darwin,-notdefault
 
     - name: Repo Sync
       run: |
         cd android-recovery
+        sed -i '/\/asuite\"/d' ~/TWRP/.repo/manifests/remove-minimal.xml
+        sed -i '/\/gflags\"/d' ~/TWRP/.repo/manifests/remove-minimal.xml
         repo sync -j$(nproc --all) --force-sync
       
     - name: Clone Device Tree
@@ -138,6 +140,9 @@ jobs:
         cd android-recovery
         source build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
+        export LC_ALL="C"
+        unset TOP ; unset OUT ; unset ${!TARGET_*} ; unset ${!BOARD_*} ; unset ${!PRODUCT_*} ; unset ${!OUT_*} ; unset ${!HOST_*} ; unset ${!KERNEL_*} ; unset ${!SOONG_*} ; unset ${!CLANG_*} ; unset ${!CROSS_*} ; unset ${!TWRP_*} ; unset ${!TW_*} ; unset ${!PB_*} ; unset ${!OF_*} ; unset ${!FOX_*}
+        unset NOT_ORANGEFOX
         lunch ${{ inputs.MAKEFILE_NAME }}-eng && make clean && make ${{ inputs.BUILD_TARGET }}image -j$(nproc --all)
         echo "Done building your ${{ inputs.BUILD_TARGET }}.img"
 
