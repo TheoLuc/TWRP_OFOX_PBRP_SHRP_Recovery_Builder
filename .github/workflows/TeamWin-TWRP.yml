@@ -120,9 +120,10 @@ jobs:
     - name: Repo Sync
       run: |
         cd android-recovery
-        sed -i '/\/asuite\"/d' ~/TWRP/.repo/manifests/remove-minimal.xml
-        sed -i '/\/gflags\"/d' ~/TWRP/.repo/manifests/remove-minimal.xml
         repo sync -j$(nproc --all) --force-sync
+        sed -i '/\/asuite\"/d' ~/android-recovery/.repo/manifests/remove-minimal.xml
+        sed -i '/\/gflags\"/d' ~/android-recovery/.repo/manifests/remove-minimal.xml
+        repo sync
       
     - name: Clone Device Tree
       run: |
